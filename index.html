@@ -158,8 +158,10 @@
       height: 7px;
       border-radius: 50%;
       background: #cbd5e1;
+      flex-shrink: 0;
     }
     #status-dot.live { background: #10b981; }
+    #status-dot.error { background: #ef4444; }
 
     iframe {
       flex: 1;
@@ -178,6 +180,16 @@
       font-size: 14px;
     }
     .placeholder svg { opacity: 0.4; }
+
+    #iframe-blocked-hint {
+      display: none;
+      padding: 10px 14px;
+      background: #fef3c7;
+      border-bottom: 1px solid #fcd34d;
+      font-size: 12px;
+      color: #78350f;
+      line-height: 1.5;
+    }
 
     #log-panel {
       width: 420px;
@@ -271,6 +283,49 @@
       flex-shrink: 0;
     }
     .resizer:hover { background: #7c3aed; }
+
+    /* Bookmarklet drag link */
+    #bookmarklet-link {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 4px;
+      font-size: 12px;
+      background: #fef3c7;
+      color: #78350f;
+      border: 1px solid #fcd34d;
+      text-decoration: none;
+      cursor: grab;
+      user-select: none;
+      white-space: nowrap;
+    }
+    #bookmarklet-link:hover { background: #fde68a; }
+    #bookmarklet-link:active { cursor: grabbing; }
+
+    /* Mobile: stack panels, hide iframe */
+    @media (max-width: 767px) {
+      .main { flex-direction: column; }
+      #frame-wrapper { display: none; }
+      #resizer { display: none; }
+      #log-panel {
+        width: 100%;
+        min-width: 0;
+        flex: 1;
+      }
+      .mobile-only { display: flex !important; }
+    }
+
+    .mobile-only {
+      display: none;
+      padding: 10px 14px;
+      background: #eff6ff;
+      border-bottom: 1px solid #bfdbfe;
+      font-size: 12px;
+      color: #1e40af;
+      line-height: 1.5;
+      gap: 6px;
+      align-items: flex-start;
+      flex-direction: column;
+    }
   </style>
 </head>
 <body>
@@ -291,8 +346,15 @@
     <button class="filter-btn error active" data-type="error">Error <span class="count-badge" id="cnt-error">0</span></button>
   </div>
   <div class="spacer"></div>
+  <a id="bookmarklet-link" title="Drag this to your bookmarks bar, then click it on any page to start capturing logs">&#128204; Capture Bookmarklet</a>
   <button id="clear-btn">Clear</button>
   <button id="copy-btn">Copy for Claude</button>
+</div>
+
+<!-- Mobile: explain bookmarklet usage since iframe is hidden -->
+<div class="mobile-only" id="mobile-hint">
+  <strong>How to capture logs on mobile:</strong>
+  Drag the <em>Capture Bookmarklet</em> above to your bookmarks. Then open any page and tap the bookmarklet — logs will appear here automatically.
 </div>
 
 <div class="main">
@@ -300,6 +362,10 @@
     <div class="frame-label">
       <span id="status-dot"></span>
       <span id="frame-url-label">No page loaded</span>
+    </div>
+    <div id="iframe-blocked-hint">
+      The page may be blocking iframe embedding (X-Frame-Options / CSP). Console logs cannot be captured from the iframe.
+      Try the <strong>Capture Bookmarklet</strong> instead: drag it to your bookmarks bar, then click it on the target page.
     </div>
     <div class="placeholder" id="placeholder">
       <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
@@ -328,6 +394,11 @@
 
 <script>
 (function () {
+  const SITE_URL = (function() {
+    const l = location;
+    return l.origin + l.pathname.replace(/\/[^/]*$/, '/');
+  })();
+
   const urlInput    = document.getElementById('url-input');
   const loadBtn     = document.getElementById('load-btn');
   const frame       = document.getElementById('page-frame');
@@ -340,11 +411,19 @@
   const copyBtn     = document.getElementById('copy-btn');
   const copyAllBtn  = document.getElementById('copy-all-btn');
   const outputPreview = document.getElementById('output-preview');
+  const iframeBlockedHint = document.getElementById('iframe-blocked-hint');
+  const bookmarkletLink   = document.getElementById('bookmarklet-link');
 
   const counts = { log: 0, info: 0, warn: 0, error: 0 };
   const activeFilters = new Set(['log', 'info', 'warn', 'error']);
   let allEntries = [];
   let currentUrl = '';
+  let iframeHintTimer = null;
+  let logsReceivedAfterLoad = false;
+
+  // Build bookmarklet href dynamically using the current page's URL
+  const bookmarkletCode = `javascript:(function(){var u=${JSON.stringify(SITE_URL)};var w=window.open(u,'_cc','width=960,height=720');var q=[];function flush(){if(!w||w.closed)return;q.forEach(function(m){w.postMessage(m,'*');});q=[];}setTimeout(flush,1500);setTimeout(flush,3000);['log','info','warn','error'].forEach(function(m){var o=console[m].bind(console);console[m]=function(){o.apply(console,arguments);var msg=Array.from(arguments).map(function(a){try{return typeof a==='object'?JSON.stringify(a,null,2):String(a);}catch(e){return String(a);}}).join(' ');q.push({type:'__consoleRelay',level:m,msg:msg});flush();};});})();`;
+  bookmarkletLink.href = bookmarkletCode;
 
   // ── Filter buttons ──────────────────────────────────────────────────────────
   document.querySelectorAll('.filter-btn').forEach(btn => {
@@ -368,26 +447,50 @@
     let url = urlInput.value.trim();
     if (!url) return;
     if (!/^https?:\/\//i.test(url)) url = 'https://' + url;
+    // Upgrade HTTP to HTTPS to prevent mixed-content blocking on HTTPS pages
+    if (url.startsWith('http://')) url = 'https://' + url.slice(7);
     urlInput.value = url;
 
     currentUrl = url;
     clearLogs();
+    logsReceivedAfterLoad = false;
+    iframeBlockedHint.style.display = 'none';
 
     placeholder.style.display = 'none';
     frame.style.display = 'block';
     statusDot.className = '';
     frameLabel.textContent = url;
 
-    frame.onload = () => { statusDot.className = 'live'; };
-    frame.onerror = () => { statusDot.className = ''; };
+    // Clear any previous hint timer
+    if (iframeHintTimer) clearTimeout(iframeHintTimer);
+
+    frame.onload = () => {
+      statusDot.className = 'live';
+      // If no logs arrive within 6 seconds of load, the page is likely blocking the iframe
+      iframeHintTimer = setTimeout(() => {
+        if (!logsReceivedAfterLoad) {
+          iframeBlockedHint.style.display = 'block';
+        }
+      }, 6000);
+    };
+
+    frame.onerror = () => {
+      statusDot.className = 'error';
+      iframeBlockedHint.style.display = 'block';
+    };
+
     frame.src = url;
   }
 
   // ── Receive console messages forwarded via postMessage ──────────────────────
-  // Pages can forward their console output with:
+  // Pages relay their console output with:
   //   window.parent.postMessage({ type: '__consoleRelay', level: 'log', msg: '...' }, '*')
+  // The bookmarklet uses window.opener.postMessage (popup mode) — both are received here.
   window.addEventListener('message', e => {
     if (!e.data || e.data.type !== '__consoleRelay') return;
+    logsReceivedAfterLoad = true;
+    iframeBlockedHint.style.display = 'none';
+    if (iframeHintTimer) { clearTimeout(iframeHintTimer); iframeHintTimer = null; }
     addEntry(e.data.level, e.data.msg);
   });
 
