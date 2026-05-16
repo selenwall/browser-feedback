@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Console Log Capture</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, monospace;
+      background: #0f1117;
+      color: #e2e8f0;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      padding: 12px 16px;
+      background: #1a1d27;
+      border-bottom: 1px solid #2d3148;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    header h1 {
+      font-size: 15px;
+      font-weight: 600;
+      color: #a78bfa;
+      white-space: nowrap;
+    }
+
+    .url-row {
+      display: flex;
+      gap: 8px;
+      flex: 1;
+      min-width: 240px;
+    }
+
+    #url-input {
+      flex: 1;
+      padding: 6px 10px;
+      background: #0f1117;
+      border: 1px solid #3d4268;
+      border-radius: 6px;
+      color: #e2e8f0;
+      font-size: 13px;
+      outline: none;
+    }
+
+    #url-input:focus { border-color: #7c3aed; }
+
+    button {
+      padding: 6px 14px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 500;
+      transition: background 0.15s;
+    }
+
+    #load-btn {
+      background: #7c3aed;
+      color: #fff;
+      white-space: nowrap;
+    }
+    #load-btn:hover { background: #6d28d9; }
+
+    .toolbar {
+      padding: 8px 16px;
+      background: #1a1d27;
+      border-bottom: 1px solid #2d3148;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .filter-group {
+      display: flex;
+      gap: 4px;
+    }
+
+    .filter-btn {
+      padding: 4px 10px;
+      border-radius: 4px;
+      font-size: 12px;
+      border: 1px solid transparent;
+      background: #2d3148;
+      color: #94a3b8;
+    }
+    .filter-btn.active { background: #3d4268; color: #e2e8f0; border-color: #5b6394; }
+    .filter-btn.log.active  { color: #93c5fd; border-color: #3b82f6; }
+    .filter-btn.warn.active { color: #fbbf24; border-color: #f59e0b; }
+    .filter-btn.error.active{ color: #f87171; border-color: #ef4444; }
+    .filter-btn.info.active { color: #34d399; border-color: #10b981; }
+
+    .spacer { flex: 1; }
+
+    #clear-btn {
+      background: #2d3148;
+      color: #94a3b8;
+      font-size: 12px;
+      padding: 4px 10px;
+    }
+    #clear-btn:hover { background: #3d4268; color: #e2e8f0; }
+
+    #copy-btn {
+      background: #065f46;
+      color: #6ee7b7;
+      font-size: 12px;
+      padding: 4px 10px;
+    }
+    #copy-btn:hover { background: #047857; }
+    #copy-btn.copied { background: #047857; color: #fff; }
+
+    .count-badge {
+      font-size: 11px;
+      padding: 1px 6px;
+      border-radius: 10px;
+      background: #2d3148;
+      color: #94a3b8;
+      margin-left: 2px;
+    }
+
+    .main {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    #frame-wrapper {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      border-right: 1px solid #2d3148;
+      min-width: 0;
+    }
+
+    .frame-label {
+      padding: 6px 12px;
+      font-size: 11px;
+      color: #64748b;
+      background: #141620;
+      border-bottom: 1px solid #2d3148;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    #status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #4b5563;
+    }
+    #status-dot.live { background: #10b981; }
+
+    iframe {
+      flex: 1;
+      border: none;
+      background: #fff;
+    }
+
+    .placeholder {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      color: #4b5563;
+      font-size: 14px;
+    }
+    .placeholder svg { opacity: 0.3; }
+
+    #log-panel {
+      width: 420px;
+      min-width: 280px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    #log-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 6px 0;
+    }
+
+    .log-entry {
+      display: flex;
+      gap: 8px;
+      padding: 5px 12px;
+      border-bottom: 1px solid #1a1d27;
+      font-size: 12px;
+      line-height: 1.5;
+      cursor: default;
+      transition: background 0.1s;
+    }
+    .log-entry:hover { background: #1e2235; }
+
+    .log-entry.log   { color: #93c5fd; }
+    .log-entry.warn  { color: #fbbf24; background: #1c160a; }
+    .log-entry.error { color: #f87171; background: #1c0a0a; }
+    .log-entry.info  { color: #34d399; }
+
+    .log-icon { flex-shrink: 0; width: 14px; text-align: center; margin-top: 1px; }
+    .log-time { flex-shrink: 0; color: #475569; font-size: 11px; margin-top: 2px; }
+    .log-msg  { flex: 1; word-break: break-all; white-space: pre-wrap; }
+
+    .empty-state {
+      padding: 32px 16px;
+      text-align: center;
+      color: #4b5563;
+      font-size: 13px;
+    }
+
+    #copy-output {
+      border-top: 1px solid #2d3148;
+      padding: 10px 12px;
+      background: #141620;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    #copy-output label {
+      font-size: 11px;
+      color: #64748b;
+    }
+
+    #output-preview {
+      background: #0f1117;
+      border: 1px solid #2d3148;
+      border-radius: 6px;
+      padding: 8px;
+      font-size: 11px;
+      color: #94a3b8;
+      max-height: 90px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      word-break: break-all;
+      font-family: monospace;
+    }
+
+    #copy-all-btn {
+      align-self: flex-end;
+      background: #7c3aed;
+      color: #fff;
+      font-size: 12px;
+      padding: 5px 14px;
+    }
+    #copy-all-btn:hover { background: #6d28d9; }
+    #copy-all-btn.copied { background: #047857; }
+
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #2d3148; border-radius: 3px; }
+
+    .resizer {
+      width: 4px;
+      cursor: col-resize;
+      background: transparent;
+      flex-shrink: 0;
+    }
+    .resizer:hover { background: #7c3aed; }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Console Capture</h1>
+  <div class="url-row">
+    <input id="url-input" type="url" placeholder="https://example.com" spellcheck="false" />
+    <button id="load-btn">Load Page</button>
+  </div>
+</header>
+
+<div class="toolbar">
+  <div class="filter-group">
+    <button class="filter-btn log active"  data-type="log">Log <span class="count-badge" id="cnt-log">0</span></button>
+    <button class="filter-btn info active" data-type="info">Info <span class="count-badge" id="cnt-info">0</span></button>
+    <button class="filter-btn warn active" data-type="warn">Warn <span class="count-badge" id="cnt-warn">0</span></button>
+    <button class="filter-btn error active" data-type="error">Error <span class="count-badge" id="cnt-error">0</span></button>
+  </div>
+  <div class="spacer"></div>
+  <button id="clear-btn">Clear</button>
+  <button id="copy-btn">Copy for Claude</button>
+</div>
+
+<div class="main">
+  <div id="frame-wrapper">
+    <div class="frame-label">
+      <span id="status-dot"></span>
+      <span id="frame-url-label">No page loaded</span>
+    </div>
+    <div class="placeholder" id="placeholder">
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <rect x="3" y="3" width="18" height="18" rx="2"/>
+        <path d="M3 9h18M9 21V9"/>
+      </svg>
+      <span>Enter a URL above and click Load Page</span>
+    </div>
+    <iframe id="page-frame" style="display:none"></iframe>
+  </div>
+
+  <div class="resizer" id="resizer"></div>
+
+  <div id="log-panel">
+    <div id="log-list">
+      <div class="empty-state" id="empty-state">Logs will appear here once a page is loaded.</div>
+    </div>
+
+    <div id="copy-output">
+      <label>Claude-ready output preview</label>
+      <div id="output-preview">Captured logs will be formatted here for easy copy-paste into Claude.</div>
+      <button id="copy-all-btn">Copy All to Clipboard</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  const urlInput    = document.getElementById('url-input');
+  const loadBtn     = document.getElementById('load-btn');
+  const frame       = document.getElementById('page-frame');
+  const placeholder = document.getElementById('placeholder');
+  const statusDot   = document.getElementById('status-dot');
+  const frameLabel  = document.getElementById('frame-url-label');
+  const logList     = document.getElementById('log-list');
+  const emptyState  = document.getElementById('empty-state');
+  const clearBtn    = document.getElementById('clear-btn');
+  const copyBtn     = document.getElementById('copy-btn');
+  const copyAllBtn  = document.getElementById('copy-all-btn');
+  const outputPreview = document.getElementById('output-preview');
+
+  const counts = { log: 0, info: 0, warn: 0, error: 0 };
+  const activeFilters = new Set(['log', 'info', 'warn', 'error']);
+  let allEntries = [];
+  let currentUrl = '';
+
+  // ── Filter buttons ──────────────────────────────────────────────────────────
+  document.querySelectorAll('.filter-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const t = btn.dataset.type;
+      if (activeFilters.has(t)) { activeFilters.delete(t); btn.classList.remove('active'); }
+      else                      { activeFilters.add(t);    btn.classList.add('active'); }
+      renderAll();
+    });
+  });
+
+  function updateCount(type) {
+    document.getElementById('cnt-' + type).textContent = counts[type];
+  }
+
+  // ── Load page ───────────────────────────────────────────────────────────────
+  loadBtn.addEventListener('click', loadPage);
+  urlInput.addEventListener('keydown', e => { if (e.key === 'Enter') loadPage(); });
+
+  function loadPage() {
+    let url = urlInput.value.trim();
+    if (!url) return;
+    if (!/^https?:\/\//i.test(url)) url = 'https://' + url;
+    urlInput.value = url;
+
+    currentUrl = url;
+    clearLogs();
+
+    placeholder.style.display = 'none';
+    frame.style.display = 'block';
+    statusDot.className = '';
+    frameLabel.textContent = url;
+
+    // Inject the console-intercept script via srcdoc proxy approach:
+    // Because cross-origin iframes block console access, we use a relay page
+    // served from the same origin that embeds the target URL and intercepts
+    // console via a content-script-like injection through postMessage relay.
+    //
+    // For same-origin or relaxed pages this works directly.
+    // For cross-origin pages we show a helper bookmarklet instruction.
+    injectRelay(url);
+  }
+
+  function injectRelay(url) {
+    // Build a small same-origin relay HTML in a blob URL
+    const relay = `<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8"/>
+<script>
+(function(){
+  // Intercept console on this relay page, then load target in nested iframe
+  var methods = ['log','info','warn','error','debug'];
+  methods.forEach(function(m){
+    var orig = console[m].bind(console);
+    console[m] = function(){
+      var args = Array.prototype.slice.call(arguments);
+      var msg = args.map(function(a){
+        try { return typeof a === 'object' ? JSON.stringify(a, null, 2) : String(a); }
+        catch(e){ return String(a); }
+      }).join(' ');
+      window.top.postMessage({ type: '__consoleRelay', level: m === 'debug' ? 'log' : m, msg: msg }, '*');
+      orig.apply(console, arguments);
+    };
+  });
+
+  var origError = window.onerror;
+  window.onerror = function(msg, src, line, col, err){
+    window.top.postMessage({ type: '__consoleRelay', level: 'error',
+      msg: msg + (src ? ' (' + src + ':' + line + ')' : '') }, '*');
+    if(origError) return origError(msg, src, line, col, err);
+  };
+
+  window.addEventListener('unhandledrejection', function(e){
+    window.top.postMessage({ type: '__consoleRelay', level: 'error',
+      msg: 'Unhandled Promise Rejection: ' + (e.reason && e.reason.message ? e.reason.message : e.reason) }, '*');
+  });
+<\/script>
+</head>
+<body style="margin:0;padding:0;">
+<iframe src="${escapeHtml(url)}" style="width:100%;height:100vh;border:none;" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals allow-downloads"></iframe>
+</body>
+</html>`;
+
+    const blob = new Blob([relay], { type: 'text/html' });
+    const blobUrl = URL.createObjectURL(blob);
+    frame.src = blobUrl;
+
+    frame.onload = () => {
+      statusDot.className = 'live';
+      // Revoke blob URL after load
+      setTimeout(() => URL.revokeObjectURL(blobUrl), 5000);
+    };
+  }
+
+  function escapeHtml(s) {
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  // ── Receive relayed console messages ────────────────────────────────────────
+  window.addEventListener('message', e => {
+    if (!e.data || e.data.type !== '__consoleRelay') return;
+    addEntry(e.data.level, e.data.msg);
+  });
+
+  // ── Also intercept THIS page's console (for demos / self-testing) ───────────
+  ['log','info','warn','error'].forEach(m => {
+    const orig = console[m].bind(console);
+    console[m] = function(...args) {
+      // Only forward if it doesn't look like our own internal noise
+      if (args[0] && String(args[0]).includes('__consoleRelay')) return orig(...args);
+      const msg = args.map(a => {
+        try { return typeof a === 'object' ? JSON.stringify(a, null, 2) : String(a); }
+        catch(e){ return String(a); }
+      }).join(' ');
+      addEntry(m, msg);
+      orig(...args);
+    };
+  });
+
+  // ── Entry management ─────────────────────────────────────────────────────────
+  function addEntry(level, msg) {
+    const validLevels = ['log','info','warn','error'];
+    if (!validLevels.includes(level)) level = 'log';
+
+    const ts = new Date();
+    const time = ts.toTimeString().slice(0,8);
+    const entry = { level, msg, time, ts };
+    allEntries.push(entry);
+    counts[level]++;
+    updateCount(level);
+    renderEntry(entry);
+    updatePreview();
+  }
+
+  function renderEntry(entry) {
+    if (!activeFilters.has(entry.level)) return;
+
+    emptyState.style.display = 'none';
+
+    const row = document.createElement('div');
+    row.className = 'log-entry ' + entry.level;
+    row.dataset.level = entry.level;
+
+    const icon = { log: '›', info: 'ℹ', warn: '⚠', error: '✕' }[entry.level];
+    row.innerHTML = `
+      <span class="log-icon">${icon}</span>
+      <span class="log-time">${entry.time}</span>
+      <span class="log-msg">${escapeHtml(entry.msg)}</span>
+    `;
+    logList.appendChild(row);
+    logList.scrollTop = logList.scrollHeight;
+  }
+
+  function renderAll() {
+    // Remove all entry rows, keep empty-state
+    Array.from(logList.querySelectorAll('.log-entry')).forEach(el => el.remove());
+
+    const visible = allEntries.filter(e => activeFilters.has(e.level));
+    if (visible.length === 0) {
+      emptyState.style.display = '';
+      emptyState.textContent = allEntries.length === 0
+        ? 'Logs will appear here once a page is loaded.'
+        : 'No entries match the active filters.';
+    } else {
+      emptyState.style.display = 'none';
+      visible.forEach(renderEntry);
+    }
+    updatePreview();
+  }
+
+  function clearLogs() {
+    allEntries = [];
+    counts.log = counts.info = counts.warn = counts.error = 0;
+    ['log','info','warn','error'].forEach(updateCount);
+    Array.from(logList.querySelectorAll('.log-entry')).forEach(el => el.remove());
+    emptyState.style.display = '';
+    emptyState.textContent = 'Logs will appear here once a page is loaded.';
+    updatePreview();
+  }
+
+  clearBtn.addEventListener('click', clearLogs);
+
+  // ── Claude-ready formatted output ────────────────────────────────────────────
+  function buildClaudeText() {
+    if (allEntries.length === 0) return '(no console entries captured)';
+
+    const lines = [
+      `Console log capture for: ${currentUrl || '(unknown page)'}`,
+      `Captured at: ${new Date().toLocaleString()}`,
+      `Total entries: ${allEntries.length}`,
+      '',
+      '--- CONSOLE ENTRIES ---',
+    ];
+
+    allEntries.forEach((e, i) => {
+      lines.push(`[${e.time}] [${e.level.toUpperCase()}] ${e.msg}`);
+    });
+
+    const errorCount = counts.error;
+    const warnCount  = counts.warn;
+    if (errorCount || warnCount) {
+      lines.push('');
+      lines.push(`--- SUMMARY ---`);
+      if (errorCount) lines.push(`Errors: ${errorCount}`);
+      if (warnCount)  lines.push(`Warnings: ${warnCount}`);
+    }
+
+    return lines.join('\n');
+  }
+
+  function updatePreview() {
+    outputPreview.textContent = buildClaudeText();
+  }
+
+  function copyToClipboard(text, btn) {
+    navigator.clipboard.writeText(text).then(() => {
+      const orig = btn.textContent;
+      btn.textContent = 'Copied!';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = orig; btn.classList.remove('copied'); }, 2000);
+    }).catch(() => {
+      // Fallback
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      btn.textContent = 'Copied!';
+      setTimeout(() => { btn.textContent = btn === copyAllBtn ? 'Copy All to Clipboard' : 'Copy for Claude'; }, 2000);
+    });
+  }
+
+  copyBtn.addEventListener('click', () => copyToClipboard(buildClaudeText(), copyBtn));
+  copyAllBtn.addEventListener('click', () => copyToClipboard(buildClaudeText(), copyAllBtn));
+
+  // ── Panel resizer ────────────────────────────────────────────────────────────
+  const resizer  = document.getElementById('resizer');
+  const logPanel = document.getElementById('log-panel');
+  let dragging = false, startX = 0, startW = 0;
+
+  resizer.addEventListener('mousedown', e => {
+    dragging = true;
+    startX = e.clientX;
+    startW = logPanel.offsetWidth;
+    document.body.style.cursor = 'col-resize';
+    document.body.style.userSelect = 'none';
+  });
+
+  window.addEventListener('mousemove', e => {
+    if (!dragging) return;
+    const delta = startX - e.clientX;
+    const newW  = Math.max(220, Math.min(700, startW + delta));
+    logPanel.style.width = newW + 'px';
+  });
+
+  window.addEventListener('mouseup', () => {
+    dragging = false;
+    document.body.style.cursor = '';
+    document.body.style.userSelect = '';
+  });
+})();
+</script>
+
+</body>
+</html>
