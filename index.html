@@ -271,6 +271,31 @@
       flex-shrink: 0;
     }
     .resizer:hover { background: #7c3aed; }
+
+    @media (max-width: 700px) {
+      .main {
+        flex-direction: column;
+      }
+
+      #frame-wrapper {
+        border-right: none;
+        border-bottom: 1px solid #e2e8f0;
+        height: 42vh;
+        flex: none;
+      }
+
+      #log-panel {
+        width: 100% !important;
+        min-width: 0;
+        flex: 1;
+      }
+
+      .resizer { display: none; }
+
+      .toolbar { gap: 6px; }
+
+      #copy-btn { order: 1; }
+    }
   </style>
 </head>
 <body>
