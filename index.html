@@ -9,8 +9,8 @@
 
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, monospace;
-      background: #0f1117;
-      color: #e2e8f0;
+      background: #f8fafc;
+      color: #1e293b;
       height: 100vh;
       display: flex;
       flex-direction: column;
@@ -18,8 +18,8 @@
 
     header {
       padding: 12px 16px;
-      background: #1a1d27;
-      border-bottom: 1px solid #2d3148;
+      background: #ffffff;
+      border-bottom: 1px solid #e2e8f0;
       display: flex;
       align-items: center;
       gap: 12px;
@@ -29,7 +29,7 @@
     header h1 {
       font-size: 15px;
       font-weight: 600;
-      color: #a78bfa;
+      color: #7c3aed;
       white-space: nowrap;
     }
 
@@ -43,10 +43,10 @@
     #url-input {
       flex: 1;
       padding: 6px 10px;
-      background: #0f1117;
-      border: 1px solid #3d4268;
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
       border-radius: 6px;
-      color: #e2e8f0;
+      color: #1e293b;
       font-size: 13px;
       outline: none;
     }
@@ -72,8 +72,8 @@
 
     .toolbar {
       padding: 8px 16px;
-      background: #1a1d27;
-      border-bottom: 1px solid #2d3148;
+      background: #ffffff;
+      border-bottom: 1px solid #e2e8f0;
       display: flex;
       align-items: center;
       gap: 8px;
@@ -90,40 +90,41 @@
       border-radius: 4px;
       font-size: 12px;
       border: 1px solid transparent;
-      background: #2d3148;
-      color: #94a3b8;
+      background: #f1f5f9;
+      color: #64748b;
     }
-    .filter-btn.active { background: #3d4268; color: #e2e8f0; border-color: #5b6394; }
-    .filter-btn.log.active  { color: #93c5fd; border-color: #3b82f6; }
-    .filter-btn.warn.active { color: #fbbf24; border-color: #f59e0b; }
-    .filter-btn.error.active{ color: #f87171; border-color: #ef4444; }
-    .filter-btn.info.active { color: #34d399; border-color: #10b981; }
+    .filter-btn.active          { background: #ffffff; color: #1e293b; border-color: #cbd5e1; }
+    .filter-btn.log.active      { color: #1d4ed8; border-color: #93c5fd; }
+    .filter-btn.warn.active     { color: #92400e; border-color: #fcd34d; }
+    .filter-btn.error.active    { color: #991b1b; border-color: #fca5a5; }
+    .filter-btn.info.active     { color: #065f46; border-color: #6ee7b7; }
 
     .spacer { flex: 1; }
 
     #clear-btn {
-      background: #2d3148;
-      color: #94a3b8;
+      background: #f1f5f9;
+      color: #64748b;
       font-size: 12px;
       padding: 4px 10px;
     }
-    #clear-btn:hover { background: #3d4268; color: #e2e8f0; }
+    #clear-btn:hover { background: #e2e8f0; color: #1e293b; }
 
     #copy-btn {
-      background: #065f46;
-      color: #6ee7b7;
+      background: #ecfdf5;
+      color: #065f46;
       font-size: 12px;
       padding: 4px 10px;
+      border: 1px solid #a7f3d0;
     }
-    #copy-btn:hover { background: #047857; }
-    #copy-btn.copied { background: #047857; color: #fff; }
+    #copy-btn:hover { background: #d1fae5; }
+    #copy-btn.copied { background: #d1fae5; color: #065f46; }
 
     .count-badge {
       font-size: 11px;
       padding: 1px 6px;
       border-radius: 10px;
-      background: #2d3148;
-      color: #94a3b8;
+      background: #f1f5f9;
+      color: #64748b;
       margin-left: 2px;
     }
 
@@ -137,16 +138,16 @@
       flex: 1;
       display: flex;
       flex-direction: column;
-      border-right: 1px solid #2d3148;
+      border-right: 1px solid #e2e8f0;
       min-width: 0;
     }
 
     .frame-label {
       padding: 6px 12px;
       font-size: 11px;
-      color: #64748b;
-      background: #141620;
-      border-bottom: 1px solid #2d3148;
+      color: #94a3b8;
+      background: #f8fafc;
+      border-bottom: 1px solid #e2e8f0;
       display: flex;
       align-items: center;
       gap: 8px;
@@ -156,7 +157,7 @@
       width: 7px;
       height: 7px;
       border-radius: 50%;
-      background: #4b5563;
+      background: #cbd5e1;
     }
     #status-dot.live { background: #10b981; }
 
@@ -173,10 +174,10 @@
       align-items: center;
       justify-content: center;
       gap: 8px;
-      color: #4b5563;
+      color: #94a3b8;
       font-size: 14px;
     }
-    .placeholder svg { opacity: 0.3; }
+    .placeholder svg { opacity: 0.4; }
 
     #log-panel {
       width: 420px;
@@ -184,6 +185,7 @@
       display: flex;
       flex-direction: column;
       overflow: hidden;
+      background: #ffffff;
     }
 
     #log-list {
@@ -196,34 +198,34 @@
       display: flex;
       gap: 8px;
       padding: 5px 12px;
-      border-bottom: 1px solid #1a1d27;
+      border-bottom: 1px solid #f1f5f9;
       font-size: 12px;
       line-height: 1.5;
       cursor: default;
       transition: background 0.1s;
     }
-    .log-entry:hover { background: #1e2235; }
+    .log-entry:hover { background: #f8fafc; }
 
-    .log-entry.log   { color: #93c5fd; }
-    .log-entry.warn  { color: #fbbf24; background: #1c160a; }
-    .log-entry.error { color: #f87171; background: #1c0a0a; }
-    .log-entry.info  { color: #34d399; }
+    .log-entry.log   { color: #1d4ed8; }
+    .log-entry.warn  { color: #92400e; background: #fffbeb; }
+    .log-entry.error { color: #991b1b; background: #fff1f2; }
+    .log-entry.info  { color: #065f46; }
 
     .log-icon { flex-shrink: 0; width: 14px; text-align: center; margin-top: 1px; }
-    .log-time { flex-shrink: 0; color: #475569; font-size: 11px; margin-top: 2px; }
+    .log-time { flex-shrink: 0; color: #94a3b8; font-size: 11px; margin-top: 2px; }
     .log-msg  { flex: 1; word-break: break-all; white-space: pre-wrap; }
 
     .empty-state {
       padding: 32px 16px;
       text-align: center;
-      color: #4b5563;
+      color: #94a3b8;
       font-size: 13px;
     }
 
     #copy-output {
-      border-top: 1px solid #2d3148;
+      border-top: 1px solid #e2e8f0;
       padding: 10px 12px;
-      background: #141620;
+      background: #f8fafc;
       display: flex;
       flex-direction: column;
       gap: 6px;
@@ -231,16 +233,16 @@
 
     #copy-output label {
       font-size: 11px;
-      color: #64748b;
+      color: #94a3b8;
     }
 
     #output-preview {
-      background: #0f1117;
-      border: 1px solid #2d3148;
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
       border-radius: 6px;
       padding: 8px;
       font-size: 11px;
-      color: #94a3b8;
+      color: #64748b;
       max-height: 90px;
       overflow-y: auto;
       white-space: pre-wrap;
@@ -256,11 +258,11 @@
       padding: 5px 14px;
     }
     #copy-all-btn:hover { background: #6d28d9; }
-    #copy-all-btn.copied { background: #047857; }
+    #copy-all-btn.copied { background: #059669; }
 
     ::-webkit-scrollbar { width: 6px; }
     ::-webkit-scrollbar-track { background: transparent; }
-    ::-webkit-scrollbar-thumb { background: #2d3148; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
 
     .resizer {
       width: 4px;
@@ -306,7 +308,7 @@
       </svg>
       <span>Enter a URL above and click Load Page</span>
     </div>
-    <iframe id="page-frame" style="display:none"></iframe>
+    <iframe id="page-frame" style="display:none" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals allow-downloads"></iframe>
   </div>
 
   <div class="resizer" id="resizer"></div>
@@ -376,73 +378,14 @@
     statusDot.className = '';
     frameLabel.textContent = url;
 
-    // Inject the console-intercept script via srcdoc proxy approach:
-    // Because cross-origin iframes block console access, we use a relay page
-    // served from the same origin that embeds the target URL and intercepts
-    // console via a content-script-like injection through postMessage relay.
-    //
-    // For same-origin or relaxed pages this works directly.
-    // For cross-origin pages we show a helper bookmarklet instruction.
-    injectRelay(url);
+    frame.onload = () => { statusDot.className = 'live'; };
+    frame.onerror = () => { statusDot.className = ''; };
+    frame.src = url;
   }
 
-  function injectRelay(url) {
-    // Build a small same-origin relay HTML in a blob URL
-    const relay = `<!DOCTYPE html>
-<html>
-<head>
-<meta charset="utf-8"/>
-<script>
-(function(){
-  // Intercept console on this relay page, then load target in nested iframe
-  var methods = ['log','info','warn','error','debug'];
-  methods.forEach(function(m){
-    var orig = console[m].bind(console);
-    console[m] = function(){
-      var args = Array.prototype.slice.call(arguments);
-      var msg = args.map(function(a){
-        try { return typeof a === 'object' ? JSON.stringify(a, null, 2) : String(a); }
-        catch(e){ return String(a); }
-      }).join(' ');
-      window.top.postMessage({ type: '__consoleRelay', level: m === 'debug' ? 'log' : m, msg: msg }, '*');
-      orig.apply(console, arguments);
-    };
-  });
-
-  var origError = window.onerror;
-  window.onerror = function(msg, src, line, col, err){
-    window.top.postMessage({ type: '__consoleRelay', level: 'error',
-      msg: msg + (src ? ' (' + src + ':' + line + ')' : '') }, '*');
-    if(origError) return origError(msg, src, line, col, err);
-  };
-
-  window.addEventListener('unhandledrejection', function(e){
-    window.top.postMessage({ type: '__consoleRelay', level: 'error',
-      msg: 'Unhandled Promise Rejection: ' + (e.reason && e.reason.message ? e.reason.message : e.reason) }, '*');
-  });
-<\/script>
-</head>
-<body style="margin:0;padding:0;">
-<iframe src="${escapeHtml(url)}" style="width:100%;height:100vh;border:none;" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals allow-downloads"></iframe>
-</body>
-</html>`;
-
-    const blob = new Blob([relay], { type: 'text/html' });
-    const blobUrl = URL.createObjectURL(blob);
-    frame.src = blobUrl;
-
-    frame.onload = () => {
-      statusDot.className = 'live';
-      // Revoke blob URL after load
-      setTimeout(() => URL.revokeObjectURL(blobUrl), 5000);
-    };
-  }
-
-  function escapeHtml(s) {
-    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-  }
-
-  // ── Receive relayed console messages ────────────────────────────────────────
+  // ── Receive console messages forwarded via postMessage ──────────────────────
+  // Pages can forward their console output with:
+  //   window.parent.postMessage({ type: '__consoleRelay', level: 'log', msg: '...' }, '*')
   window.addEventListener('message', e => {
     if (!e.data || e.data.type !== '__consoleRelay') return;
     addEntry(e.data.level, e.data.msg);
@@ -452,7 +395,6 @@
   ['log','info','warn','error'].forEach(m => {
     const orig = console[m].bind(console);
     console[m] = function(...args) {
-      // Only forward if it doesn't look like our own internal noise
       if (args[0] && String(args[0]).includes('__consoleRelay')) return orig(...args);
       const msg = args.map(a => {
         try { return typeof a === 'object' ? JSON.stringify(a, null, 2) : String(a); }
@@ -478,6 +420,12 @@
     updatePreview();
   }
 
+  function escapeHtml(s) {
+    return String(s)
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+      .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
   function renderEntry(entry) {
     if (!activeFilters.has(entry.level)) return;
 
@@ -498,7 +446,6 @@
   }
 
   function renderAll() {
-    // Remove all entry rows, keep empty-state
     Array.from(logList.querySelectorAll('.log-entry')).forEach(el => el.remove());
 
     const visible = allEntries.filter(e => activeFilters.has(e.level));
@@ -538,7 +485,7 @@
       '--- CONSOLE ENTRIES ---',
     ];
 
-    allEntries.forEach((e, i) => {
+    allEntries.forEach(e => {
       lines.push(`[${e.time}] [${e.level.toUpperCase()}] ${e.msg}`);
     });
 
@@ -546,7 +493,7 @@
     const warnCount  = counts.warn;
     if (errorCount || warnCount) {
       lines.push('');
-      lines.push(`--- SUMMARY ---`);
+      lines.push('--- SUMMARY ---');
       if (errorCount) lines.push(`Errors: ${errorCount}`);
       if (warnCount)  lines.push(`Warnings: ${warnCount}`);
     }
@@ -565,7 +512,6 @@
       btn.classList.add('copied');
       setTimeout(() => { btn.textContent = orig; btn.classList.remove('copied'); }, 2000);
     }).catch(() => {
-      // Fallback
       const ta = document.createElement('textarea');
       ta.value = text;
       ta.style.position = 'fixed';
